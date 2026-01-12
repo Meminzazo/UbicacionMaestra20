@@ -1,4 +1,4 @@
-package com.meminzazo.ubicacionmaestra20.ui.screens.auth
+package com.meminzazo.ubicacionmaestra20.ui.screens.auth.register
 
 import android.util.Log
 import androidx.compose.runtime.getValue
@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.meminzazo.ubicacionmaestra20.core.validators.RegisterValidator
 import com.meminzazo.ubicacionmaestra20.data.repository.AuthRepository
 import kotlinx.coroutines.launch
 
@@ -19,21 +20,24 @@ class RegisterViewModel(
     var errorMessage by mutableStateOf<String?>(null)
         private set
 
-
     fun register(
         email: String,
         password: String,
         confirmPassword: String,
         onSuccess: () -> Unit
     ){
-        Log.d("REGISTER_ DEBUG", "ViewModel register() llamado")
-        if (email.isBlank() || password.isBlank() || confirmPassword.isBlank()) {
-            errorMessage = "Completa todos los campos"
-            return
-        }
 
-        if (password != confirmPassword) {
-            errorMessage = "Las contraseñas no coinciden"
+        if (isLoading) return
+        Log.d("REGISTER_ DEBUG", "ViewModel register() llamado")
+
+        val validationError = RegisterValidator.validate(
+            email,
+            password,
+            confirmPassword
+        )
+
+        if (validationError != null){
+            errorMessage = validationError
             return
         }
 
@@ -41,10 +45,9 @@ class RegisterViewModel(
             Log.d("REGISTER_ DEBUG", "Corrutina iniciada")
             isLoading = true
             errorMessage = null
-
             val result = repository.register(email, password)
 
-            Log.d("REGISTER_ DEBUG", "Resultado Firebase: $result")
+            Log.d("REGISTER_DEBUG", "Resultado Firebase: $result")
 
             isLoading = false
 
@@ -53,11 +56,10 @@ class RegisterViewModel(
                     Log.d("REGISTER_DEBUG", "Registro exitoso")
                     onSuccess()
                 }
-                .onFailure {
-                    errorMessage = it.message
-                    Log.d("REGISTER_DEBUG", "Error en el registro: ${it.message}")
+                .onFailure {exception ->
+                    Log.d("REGISTER_DEBUG", "Error en el registro: ${exception.message}")
+                    errorMessage = exception.message
                 }
         }
-
     }
 }

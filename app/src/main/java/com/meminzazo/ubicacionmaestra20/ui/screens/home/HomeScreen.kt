@@ -16,12 +16,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
 fun HomeScreen(
-    onSingOutClick: () -> Unit
-){
-    Scaffold{ padding ->
+    homeViewModel: HomeViewModel = viewModel()
+) {
+    Scaffold { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -40,18 +41,11 @@ fun HomeScreen(
 
             Button(
                 modifier = Modifier.fillMaxWidth(),
-                onClick = onSingOutClick
+                onClick = { homeViewModel.logout() }
             ) {
-                Text(text = "Cerrar sesión")
+                Text("Cerrar sesión")
             }
         }
     }
 }
-@Preview(
-    //uiMode = Configuration.UI_MODE_NIGHT_YES,
-    showBackground = true
-)
-@Composable
-fun HomeScreenPreview(){
-    HomeScreen(onSingOutClick = {})
-}
+

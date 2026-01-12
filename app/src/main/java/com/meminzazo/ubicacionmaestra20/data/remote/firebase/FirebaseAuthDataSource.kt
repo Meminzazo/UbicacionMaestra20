@@ -15,7 +15,14 @@ class FirebaseAuthDataSource(
         auth.createUserWithEmailAndPassword(email, password).await()
     }
 
-    fun isUserLoggedIn(): Boolean = auth.currentUser != null
+    suspend fun sendPasswordResetEmail(email: String) {
+        auth.sendPasswordResetEmail(email).await()
+    }
+
+
+    fun isUserLoggedIn(): Boolean {
+        return auth.currentUser != null
+    }
 
     fun logout() {
         auth.signOut()
