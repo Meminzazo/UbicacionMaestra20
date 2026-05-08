@@ -4,9 +4,12 @@ import android.util.Log
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.meminzazo.ubicacionmaestra20.data.remote.firebase.FirebaseAuthDataSource
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class AuthRepository(
-    private val remote: FirebaseAuthDataSource = FirebaseAuthDataSource()
+@Singleton
+class AuthRepository @Inject constructor(
+    private val remote: FirebaseAuthDataSource
 ) {
 
     suspend fun login(email: String, password: String): Result<Unit> =

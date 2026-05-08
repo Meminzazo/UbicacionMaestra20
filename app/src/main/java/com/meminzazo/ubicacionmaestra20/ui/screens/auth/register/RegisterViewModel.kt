@@ -8,58 +8,59 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.meminzazo.ubicacionmaestra20.core.validators.RegisterValidator
 import com.meminzazo.ubicacionmaestra20.data.repository.AuthRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class RegisterViewModel(
-    private val repository: AuthRepository = AuthRepository()
+
+data class RegisterUiState(
+    val isLoading: Boolean = false,
+    val errorMessage: String? = null,
+    val registerSuccess: Boolean = false
+)
+
+@HiltViewModel
+class RegisterViewModel @Inject constructor(
+    private val repository: AuthRepository
 ): ViewModel() {
 
-    var isLoading by mutableStateOf(false)
-        private set
-
-    var errorMessage by mutableStateOf<String?>(null)
-        private set
+    private val _uiState = MutableStateFlow(RegisterUiState())
+    val uiState: StateFlow<RegisterUiState> = _uiState.asStateFlow()
 
     fun register(
         email: String,
         password: String,
-        confirmPassword: String,
-        onSuccess: () -> Unit
+        confirmPassword: String
     ){
-
-        if (isLoading) return
-        Log.d("REGISTER_ DEBUG", "ViewModel register() llamado")
-
-        val validationError = RegisterValidator.validate(
-            email,
-            password,
-            confirmPassword
-        )
-
+        val validationError = RegisterValidator.validate(email, password, confirmPassword)
         if (validationError != null){
-            errorMessage = validationError
+            _uiState.update { it.copy(errorMessage = validationError) }
             return
         }
 
         viewModelScope.launch {
-            Log.d("REGISTER_ DEBUG", "Corrutina iniciada")
-            isLoading = true
-            errorMessage = null
-            val result = repository.register(email, password)
+            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
 
-            Log.d("REGISTER_DEBUG", "Resultado Firebase: $result")
-
-            isLoading = false
-
-            result
+            repository.register(email, password)
                 .onSuccess {
-                    Log.d("REGISTER_DEBUG", "Registro exitoso")
-                    onSuccess()
+                    _uiState.update { it.copy(isLoading = false, registerSuccess = true) }
                 }
-                .onFailure {exception ->
-                    Log.d("REGISTER_DEBUG", "Error en el registro: ${exception.message}")
-                    errorMessage = exception.message
+                .onFailure { throwable ->
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            errorMessage = throwable.message ?: "Error al registrarse"
+                        )
+                    }
                 }
+        }
+
+        fun clearError(){
+            _uiState.update { it.copy(errorMessage = null) }
         }
     }
 }

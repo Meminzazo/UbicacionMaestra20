@@ -2,9 +2,12 @@ package com.meminzazo.ubicacionmaestra20.data.remote.firebase
 
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.tasks.await
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class FirebaseAuthDataSource(
-    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
+@Singleton
+class FirebaseAuthDataSource @Inject constructor(
+    private val auth: FirebaseAuth
 ) {
 
     suspend fun login(email: String, password: String) {

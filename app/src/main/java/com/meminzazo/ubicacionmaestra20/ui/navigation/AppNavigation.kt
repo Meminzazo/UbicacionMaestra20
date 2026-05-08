@@ -6,7 +6,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -17,12 +17,12 @@ import com.meminzazo.ubicacionmaestra20.ui.screens.auth.login.LoginScreen
 import com.meminzazo.ubicacionmaestra20.ui.screens.auth.recovery.RecoveryScreen
 import com.meminzazo.ubicacionmaestra20.ui.screens.auth.register.RegisterScreen
 import com.meminzazo.ubicacionmaestra20.ui.screens.home.HomeScreen
+
 @Composable
 fun AppNavigation(
-    authViewModel: AuthViewModel = viewModel()
+    authViewModel: AuthViewModel = hiltViewModel()
 ) {
     val authState = authViewModel.authState
-    val navController = rememberNavController()
 
     when (authState) {
 
@@ -40,6 +40,7 @@ fun AppNavigation(
         }
 
         AuthState.Unauthenticated -> {
+            val navController = rememberNavController()
             NavHost(
                 navController = navController,
                 startDestination = Routes.AuthMenu.route
@@ -60,7 +61,7 @@ fun AppNavigation(
                     LoginScreen(
                         onForgotPassword = {
                             navController.navigate(Routes.Recovery.route)
-                        }, onLoginSuccess = {}
+                        }
                     )
                 }
 
@@ -70,8 +71,10 @@ fun AppNavigation(
 
                 composable(Routes.Recovery.route) {
                     RecoveryScreen(
-                        onRecoverySuccess = {
-                            navController.popBackStack()
+                        onNavigateBack = {
+                            navController.navigate(Routes.AuthMenu.route) {
+                                popUpTo(Routes.AuthMenu.route) { inclusive = true }
+                            }
                         }
                     )
                 }

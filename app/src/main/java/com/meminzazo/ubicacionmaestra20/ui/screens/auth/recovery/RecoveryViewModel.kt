@@ -1,59 +1,61 @@
 package com.meminzazo.ubicacionmaestra20.ui.screens.auth.recovery
 
-import android.util.Log
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.meminzazo.ubicacionmaestra20.core.validators.RecoveryValidartor
 import com.meminzazo.ubicacionmaestra20.data.repository.AuthRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class RecoveryViewModel(
-    private val repository: AuthRepository = AuthRepository()
-): ViewModel(){
+data class RecoveryUiState(
+    val isLoading: Boolean = false,
+    val errorMessage: String? = null,
+    val emailSent: Boolean = false
+)
 
+@HiltViewModel
+class RecoveryViewModel @Inject constructor(
+    private val repository: AuthRepository
+) : ViewModel() {
 
-    var isLoading by mutableStateOf(false)
-        private set
+    private val _uiState = MutableStateFlow(RecoveryUiState())
+    val uiState: StateFlow<RecoveryUiState> = _uiState.asStateFlow()
 
-    var errorMessage by mutableStateOf<String?>(null)
-        private set
-    fun recovery(
-        email: String,
-        onSuccess: () -> Unit
-    ) {
-        if (isLoading) return
-        Log.d("RECOVERY_DEBUG", "ViewModel recovery() llamado")
-
-        val validationError = RecoveryValidartor.validate(
-            email
-        )
-
+    fun sendRecoveryEmail(email: String) {
+        val validationError = RecoveryValidartor.validate(email)
         if (validationError != null) {
-            Log.d("RECOVERY_DEBUG", "Error de validación: $validationError")
-            errorMessage = validationError
+            _uiState.update { it.copy(errorMessage = validationError) }
             return
         }
 
         viewModelScope.launch {
-            Log.d("RECOVERY_DEBUG", "Corrutina iniciada")
-            isLoading = true
-            errorMessage = null
+            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
 
-            val result = repository.sendPasswordResetEmail(email)
-
-            isLoading = false
-
-            result
+            repository.sendPasswordResetEmail(email)
                 .onSuccess {
-                    Log.d("RECOVERY_DEBUG", "Email enviado")
-                    onSuccess()
+                    _uiState.update { it.copy(isLoading = false, emailSent = true) }
                 }
                 .onFailure { throwable ->
-                    Log.d("RECOVERY_DEBUG", "Error al enviar email: ${throwable.message}")
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            errorMessage = throwable.message ?: "Error al enviar el correo"
+                        )
+                    }
                 }
         }
+    }
+
+    fun clearError() {
+        _uiState.update { it.copy(errorMessage = null) }
+    }
+
+    fun onEmailSentHandled() {
+        _uiState.update { it.copy(emailSent = false) }
     }
 }

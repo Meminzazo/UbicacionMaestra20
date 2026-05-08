@@ -1,6 +1,5 @@
 package com.meminzazo.ubicacionmaestra20.ui.screens.auth.register
 
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -8,8 +7,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -21,15 +22,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @Composable
 fun RegisterScreen(
-    onRegisterSuccess: () -> Unit = {},
-    viewModel: RegisterViewModel = viewModel()
+    viewModel: RegisterViewModel = hiltViewModel()
 ) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
     Column(modifier = Modifier
         .fillMaxSize()
         .padding(32.dp),
@@ -39,8 +41,6 @@ fun RegisterScreen(
         var email by remember { mutableStateOf("") }
         var password by remember { mutableStateOf("") }
         var confirmPassword by remember { mutableStateOf("") }
-
-        val errorMessage = viewModel.errorMessage
 
         Spacer(
             modifier = Modifier
@@ -63,7 +63,8 @@ fun RegisterScreen(
                 keyboardType = KeyboardType.Email
             ),
             modifier = Modifier
-                .fillMaxWidth()
+                .fillMaxWidth(),
+            isError = uiState.errorMessage != null
         )
 
         Spacer(
@@ -78,7 +79,8 @@ fun RegisterScreen(
                 keyboardType = KeyboardType.Password
             ),
             modifier = Modifier
-                .fillMaxWidth()
+                .fillMaxWidth(),
+            isError = uiState.errorMessage != null
         )
 
         Spacer(modifier = Modifier
@@ -93,14 +95,15 @@ fun RegisterScreen(
                 keyboardType = KeyboardType.Password
             ),
             modifier = Modifier
-                .fillMaxWidth()
+                .fillMaxWidth(),
+            isError = uiState.errorMessage != null
         )
 
         Spacer(modifier = Modifier
             .height(16.dp)
         )
 
-        errorMessage?.let {
+        uiState.errorMessage?.let {
             Text(
                 text = it,
                 color = MaterialTheme.colorScheme.error
@@ -111,30 +114,18 @@ fun RegisterScreen(
         }
 
         Button(
-            modifier = Modifier
-                .fillMaxWidth(),
-            onClick = {
-                Log.d("REGISTER_DEBUG", "Boton presionado")
-
-                viewModel.register(
-                    email = email,
-                    password = password,
-                    confirmPassword = confirmPassword,
-                    onSuccess = onRegisterSuccess
-                )
-            },
-            enabled = !viewModel.isLoading
+            onClick = { viewModel.register(email, password, confirmPassword)},
+            enabled = !uiState.isLoading,
+            modifier = Modifier.fillMaxWidth()
         ) {
+            if (uiState.isLoading){
+                CircularProgressIndicator(
+                    modifier = Modifier.size(20.dp),
+                    strokeWidth = 2.dp,
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
+            }
             Text(text = "Registrar")
         }
     }
-}
-
-@Preview(
-    //uiMode = Configuration.UI_MODE_NIGHT_YES,
-    showBackground = true
-)
-@Composable
-fun RegisterScreenPreview() {
-    RegisterScreen()
 }

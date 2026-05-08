@@ -7,6 +7,9 @@ import androidx.activity.enableEdgeToEdge
 import com.meminzazo.ubicacionmaestra20.ui.navigation.AppNavigation
 import com.meminzazo.ubicacionmaestra20.ui.theme.UbicacionMaestra20Theme
 
+import dagger.hilt.android.AndroidEntryPoint
+
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
