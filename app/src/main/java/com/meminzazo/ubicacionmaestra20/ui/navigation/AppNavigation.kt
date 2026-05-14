@@ -17,6 +17,7 @@ import com.meminzazo.ubicacionmaestra20.ui.screens.auth.login.LoginScreen
 import com.meminzazo.ubicacionmaestra20.ui.screens.auth.recovery.RecoveryScreen
 import com.meminzazo.ubicacionmaestra20.ui.screens.auth.register.RegisterScreen
 import com.meminzazo.ubicacionmaestra20.ui.screens.home.HomeScreen
+import com.meminzazo.ubicacionmaestra20.ui.screens.main.MainScreen
 
 @Composable
 fun AppNavigation(
@@ -36,7 +37,8 @@ fun AppNavigation(
         }
 
         AuthState.Authenticated -> {
-            HomeScreen()
+            MainScreen()
+            //HomeScreen(onLogoutClick = { authViewModel.logout() })
         }
 
         AuthState.Unauthenticated -> {

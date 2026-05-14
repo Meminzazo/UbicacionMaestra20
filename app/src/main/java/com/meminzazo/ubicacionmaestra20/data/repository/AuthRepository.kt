@@ -22,12 +22,10 @@ class AuthRepository @Inject constructor(
             Result.failure(e)
         }
 
-    suspend fun register(email: String, password: String): Result<Unit> =
+    suspend fun register(email: String, password: String): Result<String> =
         try {
-            remote.register(email, password)
-            Result.success(Unit)
-        } catch (e: FirebaseAuthUserCollisionException) {
-            Result.failure(Exception("Este correo ya está registrado"))
+            val uid = remote.register(email, password)
+            Result.success(uid)  // Ahora devuelve el UID
         } catch (e: Exception) {
             Result.failure(e)
         }

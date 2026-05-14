@@ -1,13 +1,12 @@
 package com.meminzazo.ubicacionmaestra20.ui.screens.auth.register
 
 import android.util.Log
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.room.util.copy
 import com.meminzazo.ubicacionmaestra20.core.validators.RegisterValidator
 import com.meminzazo.ubicacionmaestra20.data.repository.AuthRepository
+import com.meminzazo.ubicacionmaestra20.data.repository.UserRepositoy
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -15,7 +14,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-
 
 data class RegisterUiState(
     val isLoading: Boolean = false,
@@ -25,7 +23,8 @@ data class RegisterUiState(
 
 @HiltViewModel
 class RegisterViewModel @Inject constructor(
-    private val repository: AuthRepository
+    private val authrepository: AuthRepository,
+    private val userRepositoy: UserRepositoy
 ): ViewModel() {
 
     private val _uiState = MutableStateFlow(RegisterUiState())
@@ -45,15 +44,37 @@ class RegisterViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
 
-            repository.register(email, password)
-                .onSuccess {
-                    _uiState.update { it.copy(isLoading = false, registerSuccess = true) }
+            // Paso 1 - Crear cuenta en Authentication
+            authrepository.register(email, password)
+                .onSuccess { uid ->
+                    // Paso 2 Crear documento en Firestore
+                    userRepositoy.createUserFirestore(uid, email)
+                        .onSuccess {
+                            Log.d("RegisterViewModel","Entrando a creacion RealtimeDB")
+                            userRepositoy.createUserRealtimeDB(uid)
+                                .onSuccess {
+                                    _uiState.update {
+                                        it.copy(
+                                            isLoading = false,
+                                            registerSuccess = true
+                                        )
+                                    }
+                                }
+                        }
+                        .onFailure { throwable ->
+                            _uiState.update {
+                                it.copy(
+                                    isLoading = false,
+                                    errorMessage = throwable.message ?: "Error al registrarse"
+                                )
+                            }
+                        }
                 }
                 .onFailure { throwable ->
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            errorMessage = throwable.message ?: "Error al registrarse"
+                            errorMessage = throwable.message
                         )
                     }
                 }

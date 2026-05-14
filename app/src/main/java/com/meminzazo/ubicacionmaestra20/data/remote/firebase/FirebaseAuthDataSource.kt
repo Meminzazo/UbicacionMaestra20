@@ -14,8 +14,9 @@ class FirebaseAuthDataSource @Inject constructor(
         auth.signInWithEmailAndPassword(email, password).await()
     }
 
-    suspend fun register(email: String, password: String) {
-        auth.createUserWithEmailAndPassword(email, password).await()
+    suspend fun register(email: String, password: String): String {
+        val result = auth.createUserWithEmailAndPassword(email, password).await()
+        return result.user?.uid ?: throw Exception("Error al obtener UID")
     }
 
     suspend fun sendPasswordResetEmail(email: String) {
