@@ -25,6 +25,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -132,5 +133,130 @@ fun LoginScreen(
             )
         }
     }
+}
 
+@Composable
+fun LoginContent(
+    uiState: LoginUiState, // Recibe el estado puro
+    onLoginClick: (String, String) -> Unit, // Callback para el botón
+    onForgotPassword: () -> Unit // Callback para el olvido de contraseña
+) {
+
+    Column(modifier = Modifier
+        .fillMaxSize()
+        .padding(32.dp),
+        verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+
+        var email by remember { mutableStateOf("") }
+        var password by remember { mutableStateOf("") }
+
+        Spacer(
+            modifier = Modifier
+                .height(64.dp)
+        )
+
+        Text(
+            text = "Iniciar Sesión",
+            style = MaterialTheme.typography.headlineMedium
+        )
+
+        Spacer(modifier = Modifier
+            .height(32.dp)
+        )
+
+        TextField(
+            value = email,
+            onValueChange = { email = it },
+            label = { Text(text = "Correo") },
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Email
+            ),
+            modifier = Modifier
+                .fillMaxWidth(),
+            isError = uiState.errorMessage != null
+        )
+
+        Spacer(modifier = Modifier
+            .height(16.dp))
+
+        TextField(
+            value = password,
+            onValueChange = { password = it },
+            label = { Text(text = "Contraseña") },
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Password
+            ),
+            modifier = Modifier.fillMaxWidth(),
+            isError = uiState.errorMessage != null
+        )
+
+        Spacer(modifier = Modifier
+            .height(16.dp)
+        )
+        uiState.errorMessage?.let{
+            Text(
+                text = it,
+                color = MaterialTheme.colorScheme.error
+            )
+            Spacer(modifier = Modifier
+                .height(8.dp)
+            )
+        }
+
+        Button(
+            onClick = { },
+            enabled = !uiState.isLoading,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            if (uiState.isLoading){
+                CircularProgressIndicator(
+                    modifier = Modifier.size(20.dp),
+                    strokeWidth = 2.dp,
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
+            }
+            Text(text = "Iniciar Sesión")
+        }
+
+        Spacer(modifier = Modifier
+            .height(8.dp)
+        )
+
+        OutlinedButton(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 70.dp),
+            onClick = {
+                onForgotPassword()
+            }
+        ){
+            Text(text = "Olvidé mi contraseña",
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
+    }
+}
+@Preview(showBackground = true)
+@Composable
+fun LoginPreview() {
+    // Aquí puedes pasar datos manuales para ver cómo queda
+    LoginContent(
+        uiState = LoginUiState(isLoading = false, errorMessage = null),
+        onLoginClick = { _, _ -> }, // No hace nada en la preview
+        onForgotPassword = {}
+    )
+}
+
+@Preview(showBackground = true, name = "Estado Error")
+@Composable
+fun LoginErrorPreview() {
+    LoginContent(
+        uiState = LoginUiState(
+            errorMessage = "Correo electrónico y/o contraseña incorrectos"
+        ),
+        onLoginClick = { _, _ -> },
+        onForgotPassword = {}
+    )
 }

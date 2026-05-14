@@ -65,7 +65,6 @@ dependencies {
     // Navigation
     implementation(libs.navigation.compose)
     implementation(libs.hilt.navigation.compose)
-
     // Hilt
     implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)
@@ -82,4 +81,8 @@ dependencies {
 
     // Material
     implementation(libs.material)
+
+    //Maps
+    implementation(libs.google.maps)
+    implementation(libs.play.services.location)
 }

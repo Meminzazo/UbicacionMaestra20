@@ -6,9 +6,9 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 @HiltViewModel
-class HomeViewModel @Inject constructor() : ViewModel() {
-
-    private val firebaseAuth = FirebaseAuth.getInstance()
+class HomeViewModel @Inject constructor(
+    private val firebaseAuth: FirebaseAuth,
+) : ViewModel() {
 
     fun logout() {
         firebaseAuth.signOut()
