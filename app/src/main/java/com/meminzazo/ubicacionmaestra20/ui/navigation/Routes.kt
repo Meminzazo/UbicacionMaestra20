@@ -7,6 +7,10 @@ sealed class Routes(val route: String) {
     object Register : Routes("register")
     object Recovery : Routes("recovery")
 
+    // Adiciones app
+    object OnboardingProfile : Routes("onboarding_profile")
+    object OnboardingGroup : Routes("onboarding_group")
+
     //Menu
     object Home : Routes("home")
     object Group : Routes("group")

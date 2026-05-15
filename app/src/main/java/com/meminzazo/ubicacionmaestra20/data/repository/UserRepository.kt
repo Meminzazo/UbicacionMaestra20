@@ -8,6 +8,9 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.meminzazo.ubicacionmaestra20.data.model.LocationPoint
 import com.meminzazo.ubicacionmaestra20.data.model.User
 import com.meminzazo.ubicacionmaestra20.data.model.UserRealtimeDB
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -16,7 +19,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class UserRepositoy @Inject constructor(
+class UserRepository @Inject constructor(
     private val firestore: FirebaseFirestore,
     private val realtimeDB: FirebaseDatabase,
     private val auth: FirebaseAuth
@@ -92,6 +95,45 @@ class UserRepositoy @Inject constructor(
             } else{
                 Result.failure(Exception("Usuario no encontrado"))
             }
+        } catch (e: Exception){
+            Result.failure(e)
+        }
+
+    fun getUserProfileFlow(uid: String): Flow<User?> =
+        callbackFlow {
+            val listener = firestore
+                .collection("users")
+                .document(uid)
+                .addSnapshotListener { snapshot, error ->
+                    if (error != null){
+                        close(error)
+                        return@addSnapshotListener
+                    }
+                    val user = snapshot?.toObject(User::class.java)
+                    trySend(user)
+                }
+            awaitClose { listener.remove() }
+        }
+
+    suspend fun updateUserProfile(
+        uid: String,
+        nombres: String,
+        apellidos: String,
+        telefono: String
+    ): Result<Unit> =
+        try {
+            firestore
+                .collection("users")
+                .document(uid)
+                .update(
+                    mapOf(
+                        "nombres" to nombres,
+                        "apellidos" to apellidos,
+                        "telefono" to telefono
+                    )
+                )
+                .await()
+            Result.success(Unit)
         } catch (e: Exception){
             Result.failure(e)
         }

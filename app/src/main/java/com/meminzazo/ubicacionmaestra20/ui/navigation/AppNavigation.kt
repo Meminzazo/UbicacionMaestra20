@@ -3,6 +3,7 @@ package com.meminzazo.ubicacionmaestra20.ui.navigation
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -10,6 +11,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.room.util.query
 import com.meminzazo.ubicacionmaestra20.ui.auth.AuthState
 import com.meminzazo.ubicacionmaestra20.ui.auth.AuthViewModel
 import com.meminzazo.ubicacionmaestra20.ui.screens.auth.AuthMenuScreen
@@ -18,6 +20,8 @@ import com.meminzazo.ubicacionmaestra20.ui.screens.auth.recovery.RecoveryScreen
 import com.meminzazo.ubicacionmaestra20.ui.screens.auth.register.RegisterScreen
 import com.meminzazo.ubicacionmaestra20.ui.screens.home.HomeScreen
 import com.meminzazo.ubicacionmaestra20.ui.screens.main.MainScreen
+import com.meminzazo.ubicacionmaestra20.ui.screens.onboarding.OnboardingGroupScreen
+import com.meminzazo.ubicacionmaestra20.ui.screens.onboarding.OnboardingProfileScreen
 
 @Composable
 fun AppNavigation(
@@ -36,9 +40,17 @@ fun AppNavigation(
             }
         }
 
-        AuthState.Authenticated -> {
+        AuthState.NeedsProfile -> {
+            OnboardingProfileScreen()
+            Text("Completa tu perfil")
+        }
+
+        AuthState.NeedsGroup -> {
+            OnboardingGroupScreen()
+        }
+
+        AuthState.Authenticated ->{
             MainScreen()
-            //HomeScreen(onLogoutClick = { authViewModel.logout() })
         }
 
         AuthState.Unauthenticated -> {

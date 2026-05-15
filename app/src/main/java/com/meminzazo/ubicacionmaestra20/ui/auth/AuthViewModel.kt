@@ -2,12 +2,18 @@ package com.meminzazo.ubicacionmaestra20.ui.auth
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
+import com.google.rpc.context.AttributeContext
+import com.meminzazo.ubicacionmaestra20.data.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class AuthViewModel @Inject constructor() : ViewModel() {
+class AuthViewModel @Inject constructor(
+    private val userRepository: UserRepository
+) : ViewModel() {
 
     private val firebaseAuth = FirebaseAuth.getInstance()
 
@@ -15,21 +21,36 @@ class AuthViewModel @Inject constructor() : ViewModel() {
     val authState: AuthState get() = _authState.value
 
     private val authStateListener = FirebaseAuth.AuthStateListener { auth ->
-        _authState.value =
             if (auth.currentUser != null) {
-                AuthState.Authenticated
+                checkOnboardingStatus(auth.currentUser!!.uid)
+                //AuthState.Authenticated
             } else {
-                AuthState.Unauthenticated
+                _authState.value = AuthState.Unauthenticated
+                //AuthState.Unauthenticated
             }
+    }
+
+    private fun checkOnboardingStatus(uid: String){
+        viewModelScope.launch {
+            userRepository.getUserProfileFlow(uid)
+                .collect { user ->
+                    _authState.value = when {
+                        user == null -> AuthState.Unauthenticated
+                        user.nombres.isEmpty() -> AuthState.NeedsProfile
+                        user.grupoId == null -> AuthState.NeedsGroup
+                        else -> AuthState.Authenticated
+                    }
+                }
+        }
     }
 
     init {
         firebaseAuth.addAuthStateListener(authStateListener)
     }
 
-    fun logout() {
-        firebaseAuth.signOut()
-        // NO navegamos, el listener se encarga
+    fun recheckOnboarding(){
+        val uid = firebaseAuth.currentUser?.uid ?: return
+        checkOnboardingStatus(uid)
     }
 
     override fun onCleared() {

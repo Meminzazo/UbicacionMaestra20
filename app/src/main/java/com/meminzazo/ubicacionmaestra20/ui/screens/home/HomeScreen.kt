@@ -33,19 +33,19 @@ fun HomeScreen(
         position = CameraPosition.fromLatLngZoom(uiState.userLocation, 12f)
     }
 
-    Scaffold { padding ->
+    Scaffold { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
-                .padding(0.dp, 12.dp)
+                .padding(paddingValues)
+                .padding(0.dp, 0.dp)
                 ,
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
             GoogleMap(
-//                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier.fillMaxSize(),
                 cameraPositionState = cameraPositionState
             )
         }

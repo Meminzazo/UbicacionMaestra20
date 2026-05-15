@@ -1,6 +1,5 @@
 package com.meminzazo.ubicacionmaestra20.ui.screens.main
 
-import android.net.sip.SipProfile
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material.icons.Icons

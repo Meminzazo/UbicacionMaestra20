@@ -3,10 +3,9 @@ package com.meminzazo.ubicacionmaestra20.ui.screens.auth.register
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.room.util.copy
 import com.meminzazo.ubicacionmaestra20.core.validators.RegisterValidator
 import com.meminzazo.ubicacionmaestra20.data.repository.AuthRepository
-import com.meminzazo.ubicacionmaestra20.data.repository.UserRepositoy
+import com.meminzazo.ubicacionmaestra20.data.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -24,7 +23,7 @@ data class RegisterUiState(
 @HiltViewModel
 class RegisterViewModel @Inject constructor(
     private val authrepository: AuthRepository,
-    private val userRepositoy: UserRepositoy
+    private val userRepositoy: UserRepository
 ): ViewModel() {
 
     private val _uiState = MutableStateFlow(RegisterUiState())
